@@ -38,18 +38,20 @@
         <button class="w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleLink">
           <div v-html="icons.link" class="fill-gray-500"></div>
         </button>
-        <button class="w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleEmote">
+        <button class="trigger-emote w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleEmote">
           <div v-html="icons.emote" class="fill-gray-500"></div>
         </button>
       </div>
     </div>
-    <div class="p-2 output outline-none min-h-24" @input="change" v-html="editorValue" contenteditable="true"></div>
+    <div ref="content" class="p-2 output outline-none min-h-24" @input="change" v-html="editorValue" contenteditable="true"></div>
   </div>
 </template>
 
 <script>
   import TurndownService from 'turndown'
   import { Marked } from '@ts-stack/markdown'
+  import { EmojiButton } from '@joeattardi/emoji-button';
+
 
   Marked.setBlockRule(/\[text-center\]([\s\S]*?)\[\/text-center\]/, (execArr) => {
     return `<p style="text-align: center;">${execArr[1]}</p>`;
@@ -88,6 +90,14 @@
     },
     mounted() {
       document.execCommand('defaultParagraphSeparator', false, 'p')
+
+      const picker = new EmojiButton();
+      const trigger = document.querySelector('.trigger-emote');
+      picker.on('emoji', selection => {
+        console.log(this.$refs.content.innerHTML += selection.emoji);
+        this.editorValue = this.editorValue.concat(this.editorValue, selection.emoji)
+      });
+      trigger.addEventListener('click', () => picker.togglePicker(trigger));
     },
     methods: {
       change(e) {
@@ -164,9 +174,6 @@
         // const selection = document.getSelection();
         // document.execCommand("insertHTML",false,"<a href='"+href+"'>"+selected+"</a>");
       },
-      toggleEmote() {
-        console.log('toggle emote');
-      }
     }
   }
 </script>

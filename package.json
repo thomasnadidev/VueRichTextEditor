@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@joeattardi/emoji-button": "^4.6.4",
     "@ts-stack/markdown": "^1.4.0",
     "core-js": "^3.8.3",
     "turndown": "^7.1.1",
