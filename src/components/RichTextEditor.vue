@@ -1,49 +1,63 @@
 <template>
   <div class="m-4 flex flex-col border-2 border-gray-200 rounded">
     <div class="flex space-x-8 border-b-2 border-gray-200 divide divide-gray-500 p-2">
-      <div class="flex space-x-2">
-        <button class="p-4 w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleBold">
-          <div v-html="icons.bold" class="fill-gray-500"></div>
-        </button>
-        <button class="p-4 w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleItalic">
-          <div v-html="icons.italic" class="fill-gray-500"></div>
-        </button>
-        <button class="w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleStriked">
-          <div v-html="icons.striked" class="fill-gray-500"></div>
-        </button>
+      <div class="flex space-x-8" v-if="!isEditingLink">
+        <div class="flex space-x-2">
+          <button class="select-none p-4 w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleBold">
+            <div v-html="icons.bold" key="bold" :class="isSelectionBold === true ? 'fill-blue-500' : 'fill-gray-500'"></div>
+          </button>
+          <button class="select-none p-4 w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleItalic">
+            <div v-html="icons.italic" :class="isSelectionItalic === true ? 'fill-blue-500' : 'fill-gray-500'"></div>
+          </button>
+          <button class="select-none w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleStriked">
+            <div v-html="icons.striked" :class="isSelectionStriked === true ? 'fill-blue-500' : 'fill-gray-500'"></div>
+          </button>
+        </div>
+        <div class="flex space-x-2">
+          <button class="select-none  w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleDotList">
+            <div v-html="icons.dotList" :class="isSelectionUnorderedList === true ? 'fill-blue-500' : 'fill-gray-500'"></div>
+          </button>
+          <button class="select-none w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleNumberList ">
+            <div v-html="icons.numberList" :class="isSelectionOrderedList === true ? 'fill-blue-500' : 'fill-gray-500'"></div>
+          </button>
+        </div>
+        <div class="flex space-x-2">
+          <button class="select-none w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleIndent">
+            <div v-html="icons.indent" class="fill-gray-500"></div>
+          </button>
+          <button class="select-none w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleJustifyLeft">
+            <div v-html="icons.justifyLeft" :class="isSelectionLeft === true ? 'fill-blue-500' : 'fill-gray-500'"></div>
+          </button>
+          <button class="select-none w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleJustifyCenter">
+            <div v-html="icons.justifyCenter" :class="isSelectionCenter === true ? 'fill-blue-500' : 'fill-gray-500'"></div>
+          </button>
+          <button class="w-8 h-8 flex justify-center items-center hover:bg-gray-100  rounded" @click="toggleJustifyRight">
+            <div v-html="icons.justifyRight" :class="isSelectionRight === true ? 'fill-blue-500' : 'fill-gray-500'"></div>
+          </button>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button class="select-none w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleLink">
+            <div v-html="icons.link" class="fill-gray-500"></div>
+          </button>
+          <button class="select-none trigger-emote w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded">
+            <div v-html="icons.emote" class="fill-gray-500"></div>
+          </button>
+        </div>
       </div>
-      <div class="flex space-x-2">
-        <button class=" w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleDotList">
-          <div v-html="icons.dotList" class="fill-gray-500"></div>
-        </button>
-        <button class="w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleNumberList ">
-          <div v-html="icons.numberList" class="fill-gray-500"></div>
-        </button>
-      </div>
-      <div class="flex space-x-2">
-        <button class="w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleIndent">
-          <div v-html="icons.indent" class="fill-gray-500"></div>
-        </button>
-        <button class="w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleJustifyLeft">
-          <div v-html="icons.justifyLeft" class="fill-gray-500"></div>
-        </button>
-        <button class="w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleJustifyCenter">
-          <div v-html="icons.justifyCenter" class="fill-gray-500"></div>
-        </button>
-        <button class="w-8 h-8 flex justify-center items-center hover:bg-gray-100  rounded" @click="toggleJustifyRight">
-          <div v-html="icons.justifyRight" class="fill-gray-500"></div>
-        </button>
-      </div>
-      <div class="flex space-x-2">
-        <button class="w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleLink">
-          <div v-html="icons.link" class="fill-gray-500"></div>
-        </button>
-        <button class="trigger-emote w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleEmote">
-          <div v-html="icons.emote" class="fill-gray-500"></div>
-        </button>
+      <div class="flex space-x-4" v-else>
+        <input v-model="currentLinkTitle" type="text" class="border-solid border px-2 py-1 outline-none rounded" placeholder="Titre">
+        <input v-model="currentLinkUrl" type="url" class="border-solid border px-2 py-1 outline-none rounded" placeholder="www.exemple.com">
+        <div class="flex space-x-2">
+          <button class="w-8 h-8 flex justify-center items-center bg-green-100 rounded" @click.stop="validateLinkEditing">
+            <div v-html="icons.validate" class="fill-green-500"></div>
+          </button>
+          <button class="w-8 h-8 flex justify-center items-center bg-red-100 rounded" @click.stop="cancelLinkEditing" >
+            <div v-html="icons.cancel" class="fill-red-500"></div>
+          </button>
+        </div>
       </div>
     </div>
-    <div ref="content" class="p-2 output outline-none min-h-24" @input="change" v-html="editorValue" contenteditable="true"></div>
+    <div id="editor" ref="content" class="p-2 output outline-none min-h-24" @click="checkSelection" @input="change" v-html="editorValue" contenteditable="true"></div>
   </div>
 </template>
 
@@ -64,6 +78,8 @@
 
   export default {
     name: componentName,
+    components: {
+    },
     props: {
       value: {
         type: String,
@@ -73,6 +89,14 @@
     data() {
       return {
         editorValue: Marked.parse(this.value) || '<p><br></p>',
+        isSelectionBold: false,
+        isSelectionItalic: false,
+        isSelectionStriked: false,
+        isSelectionOrderedList: false,
+        isSelectionUnorderedList: false,
+        isSelectionLeft: false,
+        isSelectionCenter: false,
+        isSelectionRight: false,
         icons: {
           bold: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M8 11h4.5a2.5 2.5 0 1 0 0-5H8v5zm10 4.5a4.5 4.5 0 0 1-4.5 4.5H6V4h6.5a4.5 4.5 0 0 1 3.256 7.606A4.498 4.498 0 0 1 18 15.5zM8 13v5h5.5a2.5 2.5 0 1 0 0-5H8z"/></svg>',
           italic: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M15 20H7v-2h2.927l2.116-12H9V4h8v2h-2.927l-2.116 12H15z"/></svg>',
@@ -84,8 +108,14 @@
           justifyCenter: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M3 4h18v2H3V4zm2 15h14v2H5v-2zm-2-5h18v2H3v-2zm2-5h14v2H5V9z"/></svg>',
           justifyRight: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M3 4h18v2H3V4zm4 15h14v2H7v-2zm-4-5h18v2H3v-2zm4-5h14v2H7V9z"/></svg>',
           emote: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-4-7h8a4 4 0 1 1-8 0zm0-2a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm8 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>',
-          link: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.364 15.536L16.95 14.12l1.414-1.414a5 5 0 1 0-7.071-7.071L9.879 7.05 8.464 5.636 9.88 4.222a7 7 0 0 1 9.9 9.9l-1.415 1.414zm-2.828 2.828l-1.415 1.414a7 7 0 0 1-9.9-9.9l1.415-1.414L7.05 9.88l-1.414 1.414a5 5 0 1 0 7.071 7.071l1.414-1.414 1.415 1.414zm-.708-10.607l1.415 1.415-7.071 7.07-1.415-1.414 7.071-7.07z"/></svg>'
-        }
+          link: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M18.364 15.536L16.95 14.12l1.414-1.414a5 5 0 1 0-7.071-7.071L9.879 7.05 8.464 5.636 9.88 4.222a7 7 0 0 1 9.9 9.9l-1.415 1.414zm-2.828 2.828l-1.415 1.414a7 7 0 0 1-9.9-9.9l1.415-1.414L7.05 9.88l-1.414 1.414a5 5 0 1 0 7.071 7.071l1.414-1.414 1.415 1.414zm-.708-10.607l1.415 1.415-7.071 7.07-1.415-1.414 7.071-7.07z"/></svg>',
+          validate: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"/></svg>',
+          cancel: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z"/></svg>'
+        
+        },
+        isEditingLink: false,
+        currentLinkTitle: '',
+        currentLinkUrl: '',
       };
     },
     mounted() {
@@ -95,9 +125,23 @@
       const trigger = document.querySelector('.trigger-emote');
       picker.on('emoji', selection => {
         console.log(this.$refs.content.innerHTML += selection.emoji);
-        this.editorValue = this.editorValue.concat(this.editorValue, selection.emoji)
+
+        // var sel, range;
+        // if (document.getSelection) {
+        //     sel = document.getSelection();
+        //     if (sel.getRangeAt && sel.rangeCount) {
+        //         range = sel.getRangeAt(0);
+        //         range.deleteContents();
+        //         range.insertNode( document.createTextNode(selection.emoji) );
+        //     }
+        // } 
+        document.execCommand('insertHTML', false, `<span>${selection.emoji}</span>`)
       });
-      trigger.addEventListener('click', () => picker.togglePicker(trigger));
+      trigger.addEventListener('click', () => {
+        if(!this.isEditingLink) {
+          picker.togglePicker(trigger);
+        }
+      })
     },
     methods: {
       change(e) {
@@ -142,15 +186,19 @@
 
 
         this.$emit('change', turndown.turndown(e.target.innerHTML))
+        this.checkSelection();
       },
       toggleBold() {
         document.execCommand('bold')
+        this.checkSelection()
       },
       toggleItalic() {
         document.execCommand('italic')
+        this.checkSelection()
       },
       toggleStriked() {
         document.execCommand('strikeThrough')
+        this.checkSelection()
       },
       toggleDotList() {
         document.execCommand('insertUnorderedList')
@@ -171,9 +219,35 @@
         document.execCommand('justifyRight')
       },
       toggleLink() {
+        this.isEditingLink = true;
         // const selection = document.getSelection();
         // document.execCommand("insertHTML",false,"<a href='"+href+"'>"+selected+"</a>");
       },
+      resetLinkEditing() {
+        this.currentLinkTitle = '';
+        this.currentLinkUrl = '';
+      },
+      cancelLinkEditing() {
+        this.isEditingLink = false;
+        this.resetLinkEditing();
+      },
+      validateLinkEditing() {
+        this.isEditingLink = false;
+        this.$refs.content.innerHTML +=  `<span><a href="${this.currentLinkUrl}">${this.currentLinkTitle}</a></span>`;
+        this.resetLinkEditing();
+      },
+      checkSelection() {
+        document.queryCommandState("Bold") ? this.isSelectionBold = true : this.isSelectionBold = false;
+        document.queryCommandState("Italic") ? this.isSelectionItalic = true : this.isSelectionItalic = false
+        document.queryCommandState("Strikethrough") ? this.isSelectionStriked = true : this.isSelectionStriked = false
+
+        document.queryCommandState("insertOrderedList") ? this.isSelectionOrderedList = true : this.isSelectionOrderedList = false
+        document.queryCommandState("insertUnorderedList") ? this.isSelectionUnorderedList = true : this.isSelectionUnorderedList = false
+
+        document.queryCommandState("justifyLeft") ? this.isSelectionLeft = true : this.isSelectionLeft = false
+        document.queryCommandState("justifyCenter") ? this.isSelectionCenter = true : this.isSelectionCenter = false
+        document.queryCommandState("justifyRight") ? this.isSelectionRight = true : this.isSelectionRight = false
+      }
     }
   }
 </script>
@@ -187,5 +261,10 @@
   @apply ml-6;
   @apply list-decimal;
 }
-
+.output a {
+  @apply text-blue-500 underline cursor-pointer select-none;
+}
+.toolbar-bold.active {
+  @apply bg-blue-200
+}
 </style>
