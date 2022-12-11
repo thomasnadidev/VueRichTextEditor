@@ -1,16 +1,23 @@
 {
-  "name": "rich-text-editor",
-  "version": "0.1.0",
-  "private": true,
+  "name": "otto-rich-text-editor",
+  "version": "1.0.0",
+  "main": "dist/otto-rich-text-editor.common.js",
+  "module": "dist/otto-rich-text-editor.umd.min.js",
+  "author": "Thomas Nadi",
+  "files": [
+    "dist"
+  ],
+  "private": false,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "build": "npm run build:lib && npm run build:style",
+    "build:lib": "vue-cli-service build --target lib --name otto-rich-text-editor src/index.js",
+    "build:style": "postcss src/index.css -o dist/styles.css"
   },
   "dependencies": {
     "@joeattardi/emoji-button": "^4.6.4",
-    "@ts-stack/markdown": "^1.4.0",
     "core-js": "^3.8.3",
+    "remarkable": "^2.0.1",
     "turndown": "^7.1.1",
     "vue": "^2.6.14"
   },
@@ -23,7 +30,8 @@
     "autoprefixer": "^10.4.13",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
-    "postcss": "^8.4.19",
+    "postcss": "^8.4.20",
+    "postcss-cli": "^10.1.0",
     "tailwindcss": "^3.2.4",
     "vue-template-compiler": "^2.6.14"
   },

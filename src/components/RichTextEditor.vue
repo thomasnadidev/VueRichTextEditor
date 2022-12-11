@@ -1,6 +1,6 @@
 <template>
-  <div class="m-4 flex flex-col border-2 border-gray-200 rounded">
-    <div class="flex space-x-8 border-b-2 border-gray-200 divide divide-gray-500 p-2">
+  <div class="m-4 flex flex-col border-solid border-2 border-gray-200 rounded">
+    <div class="flex space-x-8 border-solid border-b-2 border-gray-200 divide divide-gray-500 p-2">
       <div class="flex space-x-8" v-if="!isEditingLink">
         <div class="flex space-x-2">
           <button class="select-none p-4 w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleBold">
@@ -39,41 +39,54 @@
           <button class="select-none w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleLink">
             <div v-html="icons.link" class="fill-gray-500"></div>
           </button>
-          <button class="select-none trigger-emote w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded">
+          <button class="select-none trigger-emote w-8 h-8 flex justify-center items-center opacity-25 cursor-not-allowed hover:bg-gray-100 rounded">
             <div v-html="icons.emote" class="fill-gray-500"></div>
           </button>
         </div>
       </div>
       <div class="flex space-x-4" v-else>
-        <input v-model="currentLinkTitle" type="text" class="border-solid border px-2 py-1 outline-none rounded" placeholder="Titre">
-        <input v-model="currentLinkUrl" type="url" class="border-solid border px-2 py-1 outline-none rounded" placeholder="www.exemple.com">
+        <input v-model="currentLinkTitle" type="text" class="border-solid border px-2 py-1 outline-none rounded select-none" placeholder="Titre">
+        <input v-model="currentLinkUrl" type="url" class="border-solid border px-2 py-1 outline-none rounded select-none" placeholder="www.exemple.com">
         <div class="flex space-x-2">
-          <button class="w-8 h-8 flex justify-center items-center bg-green-100 rounded" @click.stop="validateLinkEditing">
+          <button class="w-8 h-8 flex justify-center items-center bg-green-100 rounded select-none" @click="validateLinkEditing">
             <div v-html="icons.validate" class="fill-green-500"></div>
           </button>
-          <button class="w-8 h-8 flex justify-center items-center bg-red-100 rounded" @click.stop="cancelLinkEditing" >
+          <button class="w-8 h-8 flex justify-center items-center bg-red-100 rounded select-none" @click="cancelLinkEditing" >
             <div v-html="icons.cancel" class="fill-red-500"></div>
           </button>
         </div>
       </div>
     </div>
-    <div id="editor" ref="content" class="p-2 output outline-none min-h-24" @click="checkSelection" @input="change" v-html="editorValue" contenteditable="true"></div>
+    <div id="editor" ref="content" class="p-2 output outline-none min-h-24" @click="checkSelection($event)" @input="change" v-html="editorValue" contenteditable="true"></div>
   </div>
 </template>
 
 <script>
-  import TurndownService from 'turndown'
-  import { Marked } from '@ts-stack/markdown'
-  import { EmojiButton } from '@joeattardi/emoji-button';
+  // import TurndownService from 'turndown'
+  // import { Remarkable } from 'remarkable';
+  // const markdown = new Remarkable('full');
+  // import { EmojiButton } from '@joeattardi/emoji-button';
 
+  // Marked.setBlockRule(/\[text-center\]([\s\S]*?)\[\/text-center\]/, (execArr) => {
+  //   return `<p style="text-align: center;">${Marked.parse(execArr[1])}</p>`;
+  // })
+  // Marked.setBlockRule(/\[text-right\]([\s\S]*?)\[\/text-right\]/, (execArr) => {
+  //   return `<p style="text-align: right;">${Marked.parse(execArr[1])}</p>`;
+  // })
+  // Marked.setBlockRule(/\**([\s\S]*?)\*\*/, (execArr) => {
+  //   return `<strong>${Marked.parse(execArr[1])}</strong>`;
+  // })
+  // Marked.setBlockRule(/_([\s\S]*?)_/, (execArr) => {
+  //   return `<em>${Marked.parse(execArr[1])}</em>`;
+  // })
+  // Marked.setBlockRule(/~([\s\S]*?)~/, (execArr) => {
+  //   return `<strike>${Marked.parse(execArr[1])}</strike>`;
+  // })
 
-  Marked.setBlockRule(/\[text-center\]([\s\S]*?)\[\/text-center\]/, (execArr) => {
-    return `<p style="text-align: center;">${execArr[1]}</p>`;
-  })
-  Marked.setBlockRule(/\[text-right\]([\s\S]*?)\[\/text-right\]/, (execArr) => {
-    return `<p style="text-align: right;">${execArr[1]}</p>`;
-  })
-
+  // Marked.setBlockRule(/\[br]/g, () => {
+  //   return `<br>`;
+  // })
+  
   const componentName = 'RichTextEditor';
 
   export default {
@@ -88,7 +101,8 @@
     },
     data() {
       return {
-        editorValue: Marked.parse(this.value) || '<p><br></p>',
+        // editorValue: Marked.parse(this.value) || '<p><br></p>',
+        editorValue: this.value || '',
         isSelectionBold: false,
         isSelectionItalic: false,
         isSelectionStriked: false,
@@ -116,76 +130,86 @@
         isEditingLink: false,
         currentLinkTitle: '',
         currentLinkUrl: '',
+        lastCarretPosition: null,
       };
     },
     mounted() {
-      document.execCommand('defaultParagraphSeparator', false, 'p')
+      // document.execCommand('defaultParagraphSeparator', false, 'p')
 
-      const picker = new EmojiButton();
-      const trigger = document.querySelector('.trigger-emote');
-      picker.on('emoji', selection => {
-        console.log(this.$refs.content.innerHTML += selection.emoji);
-
-        // var sel, range;
-        // if (document.getSelection) {
-        //     sel = document.getSelection();
-        //     if (sel.getRangeAt && sel.rangeCount) {
-        //         range = sel.getRangeAt(0);
-        //         range.deleteContents();
-        //         range.insertNode( document.createTextNode(selection.emoji) );
-        //     }
-        // } 
-        document.execCommand('insertHTML', false, `<span>${selection.emoji}</span>`)
-      });
-      trigger.addEventListener('click', () => {
-        if(!this.isEditingLink) {
-          picker.togglePicker(trigger);
-        }
-      })
+      // const picker = new EmojiButton();
+      // const trigger = document.querySelector('.trigger-emote');
+      // picker.on('emoji', selection => {
+      //   document.execCommand('insertHTML', false, `<span>${selection.emoji}</span>`)
+      // });
+      // trigger.addEventListener('click', () => {
+      //   if(!this.isEditingLink) {
+      //     picker.togglePicker(trigger);
+      //   }
+      // })
     },
     methods: {
       change(e) {
-        const turndown = new TurndownService({
-          emDelimiter: '_',
-          linkStyle: 'inlined',
-        })
+        // const turndown = new TurndownService({
+        //   emDelimiter: '_',
+        //   linkStyle: 'inlined',
+        // })
 
-        turndown.addRule('striked', {
-          filter: ['del', 's', 'strike'],
-            replacement: (content) => {
-              return `~${content}~`
-            }
-        })
+        // turndown.addRule('striked', {
+        //   filter: ['del', 's', 'strike'],
+        //     replacement: (content) => {
+        //       return `~${content}~`
+        //     }
+        // })
 
-        turndown.addRule('striked', {
-          filter: ['del', 's', 'strike'],
-            replacement: (content) => {
-              return `~${content}~`
-            }
-        })
-        turndown.addRule('indent', {
-          filter: ['blockquote'],
-          replacement: (content) => {
-            return `[indent]${content}[/indent]`
-          }
-        })
-        turndown.addRule('justify', {
-          filter: ['p'],
-          replacement: (content, node) => {
-            if(node.style.textAlign === 'center') {
-              return `[text-center]${content}[/text-center]`
-            }
-            else if(node.style.textAlign === 'right') {
-              return `[text-right]${content}[/text-right]`
-            }
-            else {
-              return content
-            }
-          }
-        })
+        // turndown.addRule('bold', {
+        //   filter: ['strong', 'b'],
+        //     replacement: (content) => {
+        //       return `**${content}**`
+        //     }
+        // })
+
+        // turndown.addRule('italic', {
+        //   filter: ['em', 'i'],
+        //     replacement: (content) => {
+        //       return `_${content}_`
+        //     }
+        // })
+
+        // turndown.addRule('indent', {
+        //   filter: [''],
+        //   replacement: () => {
+        //     return `[indent/]`
+        //   }
+        // })
+
+        // turndown.addRule('breaks', {
+        //   filter: 'br',
+
+        //   replacement: function (content, node, options) {
+        //     if (node.previousElementSibling && node.previousElementSibling.nodeName === 'BR') {
+        //         return options.br + '\\n'
+        //     }
+        //     return options.br + '\\n'
+        //   }
+        // })
+
+        // turndown.addRule('justify', {
+        //   filter: ['p'],
+        //   replacement: (content, node) => {
+        //     if(node.style.textAlign === 'center') {
+        //       return `[text-center]${content}[/text-center]`
+        //     }
+        //     else if(node.style.textAlign === 'right') {
+        //       return `[text-right]${content}[/text-right]`
+        //     }
+        //     else {
+        //       return content
+        //     }
+        //   }
+        // })
 
 
-        this.$emit('change', turndown.turndown(e.target.innerHTML))
+        this.$emit('change', e.target.innerHTML)
         this.checkSelection();
       },
       toggleBold() {
@@ -233,38 +257,52 @@
       },
       validateLinkEditing() {
         this.isEditingLink = false;
-        this.$refs.content.innerHTML +=  `<span><a href="${this.currentLinkUrl}">${this.currentLinkTitle}</a></span>`;
+
+        const el = this.lastCarretPosition.anchor_node.parentNode
+        const selection = this.lastCarretPosition.selection
+        
+        const range = document.createRange();
+        selection.removeAllRanges();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        selection.addRange(range);
+        el.focus();
+
+        let a = document.createElement('a');
+        let linkText = document.createTextNode(this.currentLinkTitle);
+        a.appendChild(linkText);
+        a.title = this.currentLinkTitle;
+        a.href = this.currentLinkUrl;
+
+        range.insertNode(a);
+
         this.resetLinkEditing();
       },
       checkSelection() {
-        document.queryCommandState("Bold") ? this.isSelectionBold = true : this.isSelectionBold = false;
-        document.queryCommandState("Italic") ? this.isSelectionItalic = true : this.isSelectionItalic = false
-        document.queryCommandState("Strikethrough") ? this.isSelectionStriked = true : this.isSelectionStriked = false
+        let selection
+        if (window.getSelection)
+          selection = window.getSelection();
+        else if (document.selection && document.selection.type != "Control")
+          selection = document.selection;
 
-        document.queryCommandState("insertOrderedList") ? this.isSelectionOrderedList = true : this.isSelectionOrderedList = false
-        document.queryCommandState("insertUnorderedList") ? this.isSelectionUnorderedList = true : this.isSelectionUnorderedList = false
+        var anchor_node = selection.anchorNode;
 
-        document.queryCommandState("justifyLeft") ? this.isSelectionLeft = true : this.isSelectionLeft = false
-        document.queryCommandState("justifyCenter") ? this.isSelectionCenter = true : this.isSelectionCenter = false
-        document.queryCommandState("justifyRight") ? this.isSelectionRight = true : this.isSelectionRight = false
+        this.lastCarretPosition = {
+          selection,
+          anchor_node
+        }
+
+        document.queryCommandState("bold", false) ? this.isSelectionBold = true : this.isSelectionBold = false;
+        document.queryCommandState("italic", false) ? this.isSelectionItalic = true : this.isSelectionItalic = false
+        document.queryCommandState("strikethrough", false) ? this.isSelectionStriked = true : this.isSelectionStriked = false
+
+        document.queryCommandState("insertOrderedList", false) ? this.isSelectionOrderedList = true : this.isSelectionOrderedList = false
+        document.queryCommandState("insertUnorderedList", false) ? this.isSelectionUnorderedList = true : this.isSelectionUnorderedList = false
+
+        document.queryCommandState("justifyLeft", false) ? this.isSelectionLeft = true : this.isSelectionLeft = false
+        document.queryCommandState("justifyCenter", false) ? this.isSelectionCenter = true : this.isSelectionCenter = false
+        document.queryCommandState("justifyRight", false) ? this.isSelectionRight = true : this.isSelectionRight = false
       }
     }
   }
 </script>
-
-<style>
-.output ul {
-  @apply ml-6;
-  @apply list-disc;
-}
-.output ol {
-  @apply ml-6;
-  @apply list-decimal;
-}
-.output a {
-  @apply text-blue-500 underline cursor-pointer select-none;
-}
-.toolbar-bold.active {
-  @apply bg-blue-200
-}
-</style>

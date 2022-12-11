@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+#editor.output i {
+  @apply italic
+}
+
+#editor.output b {
+  @apply font-bold
+}
+
+#editor.output s {
+  @apply line-through
+}
+
+#editor.output ul {
+  @apply ml-6;
+  @apply list-disc;
+}
+#editor.output ol {
+  @apply ml-6;
+  @apply list-decimal;
+}
+#editor.output a {
+  @apply text-blue-500 underline cursor-pointer select-none;
+}
