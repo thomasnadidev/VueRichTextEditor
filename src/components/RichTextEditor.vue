@@ -25,6 +25,11 @@
           <button class="select-none w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleIndent">
             <div v-html="icons.indent" class="fill-gray-500"></div>
           </button>
+          <button class="select-none w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleIndentBack">
+            <div v-html="icons.indentBack" class="fill-gray-500"></div>
+          </button>
+        </div>
+        <div class="flex space-x-2">
           <button class="select-none w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleJustifyLeft">
             <div v-html="icons.justifyLeft" :class="isSelectionLeft === true ? 'fill-blue-500' : 'fill-gray-500'"></div>
           </button>
@@ -36,10 +41,10 @@
           </button>
         </div>
         <div class="flex items-center space-x-2">
-          <button class="select-none w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleLink">
-            <div v-html="icons.link" class="fill-gray-500"></div>
+          <button class="select-none w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" :class="isLinkCreationAllowed ? 'opacity-100 cursor-pointer' : 'opacity-25 cursor-not-allowed'" @click="toggleLink">
+            <div v-html="icons.link" :class="isSelectionLink === true ? 'fill-blue-500' : 'fill-gray-500'"></div>
           </button>
-          <button class="select-none trigger-emote w-8 h-8 flex justify-center items-center opacity-25 cursor-not-allowed hover:bg-gray-100 rounded">
+          <button class="select-none trigger-emote w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded">
             <div v-html="icons.emote" class="fill-gray-500"></div>
           </button>
         </div>
@@ -57,7 +62,7 @@
         </div>
       </div>
     </div>
-    <div id="editor" ref="content" class="p-2 output outline-none min-h-24" @click="checkSelection($event)" @input="change" v-html="editorValue" contenteditable="true"></div>
+    <div id="editor" ref="content" class="p-2 output outline-none min-h-24" @input="change" @click="checkSelection($event)" v-html="editorValue" contenteditable="true"></div>
   </div>
 </template>
 
@@ -65,7 +70,7 @@
   // import TurndownService from 'turndown'
   // import { Remarkable } from 'remarkable';
   // const markdown = new Remarkable('full');
-  // import { EmojiButton } from '@joeattardi/emoji-button';
+  import { EmojiButton } from '@joeattardi/emoji-button';
 
   // Marked.setBlockRule(/\[text-center\]([\s\S]*?)\[\/text-center\]/, (execArr) => {
   //   return `<p style="text-align: center;">${Marked.parse(execArr[1])}</p>`;
@@ -102,7 +107,7 @@
     data() {
       return {
         // editorValue: Marked.parse(this.value) || '<p><br></p>',
-        editorValue: this.value || '',
+        editorValue: this.value || '<div><br></div>',
         isSelectionBold: false,
         isSelectionItalic: false,
         isSelectionStriked: false,
@@ -111,6 +116,8 @@
         isSelectionLeft: false,
         isSelectionCenter: false,
         isSelectionRight: false,
+        isSelectionLink: false,
+        isLinkCreationAllowed: false,
         icons: {
           bold: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M8 11h4.5a2.5 2.5 0 1 0 0-5H8v5zm10 4.5a4.5 4.5 0 0 1-4.5 4.5H6V4h6.5a4.5 4.5 0 0 1 3.256 7.606A4.498 4.498 0 0 1 18 15.5zM8 13v5h5.5a2.5 2.5 0 1 0 0-5H8z"/></svg>',
           italic: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M15 20H7v-2h2.927l2.116-12H9V4h8v2h-2.927l-2.116 12H15z"/></svg>',
@@ -118,6 +125,7 @@
           dotList: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M8 4h13v2H8V4zM4.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm0 7a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm0 6.9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM8 11h13v2H8v-2zm0 7h13v2H8v-2z"/></svg>',
           numberList: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M8 4h13v2H8V4zM5 3v3h1v1H3V6h1V4H3V3h2zM3 14v-2.5h2V11H3v-1h3v2.5H4v.5h2v1H3zm2 5.5H3v-1h2V18H3v-1h3v4H3v-1h2v-.5zM8 11h13v2H8v-2zm0 7h13v2H8v-2z"/></svg>',
           indent: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M3 4h18v2H3V4zm0 15h18v2H3v-2zm8-5h10v2H11v-2zm0-5h10v2H11V9zm-4 3.5L3 16V9l4 3.5z"/></svg>',
+          indentBack: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M3 4h18v2H3V4zm0 15h18v2H3v-2zm8-5h10v2H11v-2zm0-5h10v2H11V9zm-8 3.5L7 9v7l-4-3.5z"/></svg>',
           justifyLeft: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M3 4h18v2H3V4zm0 15h14v2H3v-2zm0-5h18v2H3v-2zm0-5h14v2H3V9z"/></svg>',
           justifyCenter: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M3 4h18v2H3V4zm2 15h14v2H5v-2zm-2-5h18v2H3v-2zm2-5h14v2H5V9z"/></svg>',
           justifyRight: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M3 4h18v2H3V4zm4 15h14v2H7v-2zm-4-5h18v2H3v-2zm4-5h14v2H7V9z"/></svg>',
@@ -134,18 +142,24 @@
       };
     },
     mounted() {
-      // document.execCommand('defaultParagraphSeparator', false, 'p')
+      document.execCommand('defaultParagraphSeparator', false, 'div')
 
-      // const picker = new EmojiButton();
-      // const trigger = document.querySelector('.trigger-emote');
-      // picker.on('emoji', selection => {
-      //   document.execCommand('insertHTML', false, `<span>${selection.emoji}</span>`)
-      // });
-      // trigger.addEventListener('click', () => {
-      //   if(!this.isEditingLink) {
-      //     picker.togglePicker(trigger);
-      //   }
-      // })
+      const picker = new EmojiButton();
+      const trigger = document.querySelector('.trigger-emote');
+      picker.on('emoji', selection => {
+        var node = document.createElement("span");
+        node.innerHTML = `${selection.emoji}`;
+        this.lastCarretPosition.lastCursorPos.insertNode(node);
+
+      });
+      trigger.addEventListener('click', () => {
+        if(!this.isEditingLink) {
+          var cursorPos = window.getSelection();
+          var range = cursorPos.getRangeAt(0);
+          this.lastCarretPosition.lastCursorPos = range
+          picker.togglePicker(trigger);
+        }
+      })
     },
     methods: {
       change(e) {
@@ -233,6 +247,9 @@
       toggleIndent() {
         document.execCommand('indent')
       },
+      toggleIndentBack() {
+        document.execCommand('outdent')
+      },
       toggleJustifyLeft() {
         document.execCommand('justifyLeft')
       },
@@ -244,6 +261,8 @@
       },
       toggleLink() {
         this.isEditingLink = true;
+        this.currentLinkTitle = this.lastCarretPosition.selectedText
+        this.currentLinkUrl = this.lastCarretPosition.range.commonAncestorContainer.parentNode.href
         // const selection = document.getSelection();
         // document.execCommand("insertHTML",false,"<a href='"+href+"'>"+selected+"</a>");
       },
@@ -258,38 +277,42 @@
       validateLinkEditing() {
         this.isEditingLink = false;
 
-        const el = this.lastCarretPosition.anchor_node.parentNode
-        const selection = this.lastCarretPosition.selection
+        var link = document.createElement("a");
+
         
-        const range = document.createRange();
-        selection.removeAllRanges();
-        range.selectNodeContents(el);
-        range.collapse(false);
-        selection.addRange(range);
-        el.focus();
+        link.href = this.currentLinkUrl
 
-        let a = document.createElement('a');
-        let linkText = document.createTextNode(this.currentLinkTitle);
-        a.appendChild(linkText);
-        a.title = this.currentLinkTitle;
-        a.href = this.currentLinkUrl;
+        link.textContent = this.lastCarretPosition.selectedText;
 
-        range.insertNode(a);
+        // Replace the selected text with the new link element
+        this.lastCarretPosition.range.deleteContents();
+        this.lastCarretPosition.range.insertNode(link);
 
         this.resetLinkEditing();
       },
       checkSelection() {
-        let selection
-        if (window.getSelection)
-          selection = window.getSelection();
-        else if (document.selection && document.selection.type != "Control")
-          selection = document.selection;
+        let selection = window.getSelection();
 
-        var anchor_node = selection.anchorNode;
+        if (selection.rangeCount > 0) {
+          let range = selection.getRangeAt(0);
+            var selectedText = range.toString();
+            this.lastCarretPosition = {
+              range,
+              selectedText
+            }
+        }
+  
+        if(this.lastCarretPosition.selectedText) {
+          this.isLinkCreationAllowed = true;
+          // this.isSelectionLink = true
+        } else {
+          this.isLinkCreationAllowed = false;
+        }
 
-        this.lastCarretPosition = {
-          selection,
-          anchor_node
+        if(this.lastCarretPosition.range.commonAncestorContainer.parentNode.href) {
+          this.isSelectionLink = true;
+        } else {
+          this.isSelectionLink = false;
         }
 
         document.queryCommandState("bold", false) ? this.isSelectionBold = true : this.isSelectionBold = false;
