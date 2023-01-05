@@ -16,7 +16,9 @@
   },
   "dependencies": {
     "@joeattardi/emoji-button": "^4.6.4",
+    "@picmo/popup-picker": "^5.7.2",
     "core-js": "^3.8.3",
+    "picmo": "^5.7.2",
     "remarkable": "^2.0.1",
     "turndown": "^7.1.1",
     "vue": "^2.6.14"

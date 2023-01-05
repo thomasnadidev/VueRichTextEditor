@@ -44,7 +44,7 @@
           <button class="select-none w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" :class="isLinkCreationAllowed ? 'opacity-100 cursor-pointer' : 'opacity-25 cursor-not-allowed'" @click="toggleLink">
             <div v-html="icons.link" :class="isSelectionLink === true ? 'fill-blue-500' : 'fill-gray-500'"></div>
           </button>
-          <button class="select-none trigger-emote w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded">
+          <button ref="emoji" class="select-none trigger-emote w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" :class="isEmojiCreationAllowed ? 'opacity-100 cursor-pointer' : 'opacity-25 cursor-not-allowed'">
             <div v-html="icons.emote" class="fill-gray-500"></div>
           </button>
         </div>
@@ -62,7 +62,7 @@
         </div>
       </div>
     </div>
-    <div id="editor" ref="content" class="p-2 output outline-none min-h-24" @input="change" @click="checkSelection($event)" v-html="editorValue" contenteditable="true"></div>
+    <div id="editor" ref="content" class="p-2 output outline-none min-h-24" :class="editorValue === 'Rédiger votre texte' ? 'text-gray-400' : 'text-black'" @input="change" @click="checkSelection($event)" @focusin="onFocus" @focusout="onFocusOut" v-html="editorValue" contenteditable="true"></div>
   </div>
 </template>
 
@@ -70,7 +70,10 @@
   // import TurndownService from 'turndown'
   // import { Remarkable } from 'remarkable';
   // const markdown = new Remarkable('full');
-  import { EmojiButton } from '@joeattardi/emoji-button';
+  // import { EmojiButton } from '@joeattardi/emoji-button';
+
+  import { createPopup } from '@picmo/popup-picker';
+
 
   // Marked.setBlockRule(/\[text-center\]([\s\S]*?)\[\/text-center\]/, (execArr) => {
   //   return `<p style="text-align: center;">${Marked.parse(execArr[1])}</p>`;
@@ -107,7 +110,8 @@
     data() {
       return {
         // editorValue: Marked.parse(this.value) || '<p><br></p>',
-        editorValue: this.value || '<div><br></div>',
+        uid: undefined,
+        editorValue: this.value,
         isSelectionBold: false,
         isSelectionItalic: false,
         isSelectionStriked: false,
@@ -118,6 +122,7 @@
         isSelectionRight: false,
         isSelectionLink: false,
         isLinkCreationAllowed: false,
+        isEmojiCreationAllowed: false,
         icons: {
           bold: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M8 11h4.5a2.5 2.5 0 1 0 0-5H8v5zm10 4.5a4.5 4.5 0 0 1-4.5 4.5H6V4h6.5a4.5 4.5 0 0 1 3.256 7.606A4.498 4.498 0 0 1 18 15.5zM8 13v5h5.5a2.5 2.5 0 1 0 0-5H8z"/></svg>',
           italic: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M15 20H7v-2h2.927l2.116-12H9V4h8v2h-2.927l-2.116 12H15z"/></svg>',
@@ -142,26 +147,51 @@
       };
     },
     mounted() {
+      this.uid = Math.floor(Math.random() * 1000000);
+
       document.execCommand('defaultParagraphSeparator', false, 'div')
 
-      const picker = new EmojiButton();
-      const trigger = document.querySelector('.trigger-emote');
-      picker.on('emoji', selection => {
-        var node = document.createElement("span");
-        node.innerHTML = `${selection.emoji}`;
-        this.lastCarretPosition.lastCursorPos.insertNode(node);
+      if(!this.value) {
+        this.editorValue = 'Rédiger votre texte'
+      }
 
+      const triggerButton = this.$refs.emoji;
+
+      const picker = createPopup({}, {
+        triggerElement: triggerButton,
+        referenceElement: triggerButton,
+        position: 'bottom-start',
+        i18n: 'fr'
       });
-      trigger.addEventListener('click', () => {
+
+      picker.addEventListener('emoji:select', event => {
+        var node = document.createElement("span");
+        node.innerHTML = `${event.emoji}`;
+        this.lastCarretPosition.lastCursorPos.insertNode(node);
+      });
+
+      triggerButton.addEventListener('click', () => {
         if(!this.isEditingLink) {
           var cursorPos = window.getSelection();
           var range = cursorPos.getRangeAt(0);
           this.lastCarretPosition.lastCursorPos = range
-          picker.togglePicker(trigger);
+          picker.open()
         }
       })
     },
     methods: {
+      onFocus() {
+        if(this.editorValue === 'Rédiger votre texte') {
+          this.editorValue = '<div><br></div>'
+        }
+        this.isEmojiCreationAllowed = true;
+      },
+      onFocusOut() {
+        if(this.value === '' || this.value === '<div><br></div>' || this.value === '<div></div>' || this.value === '<br>') {
+          this.editorValue = 'Rédiger votre texte'
+        }
+        this.isEmojiCreationAllowed = false;
+      },
       change(e) {
         // const turndown = new TurndownService({
         //   emDelimiter: '_',
@@ -221,7 +251,6 @@
         //     }
         //   }
         // })
-
 
         this.$emit('change', e.target.innerHTML)
         this.checkSelection();
@@ -291,15 +320,27 @@
         this.resetLinkEditing();
       },
       checkSelection() {
+        if(this.editorValue === '<div>Redigez votre texte</div>') {
+          this.editorValue = '<div></div>'
+        }
         let selection = window.getSelection();
 
-        if (selection.rangeCount > 0) {
-          let range = selection.getRangeAt(0);
+        if (selection && selection.rangeCount > 0) {
+          if(selection.getRangeAt(0)) {
+            let range = selection.getRangeAt(0);
             var selectedText = range.toString();
             this.lastCarretPosition = {
               range,
               selectedText
             }
+          }
+          
+        }
+
+        if(selection) {
+          this.isEmojiCreationAllowed = true;
+        } else {
+          this.isEmojiCreationAllowed = false;
         }
   
         if(this.lastCarretPosition.selectedText) {
