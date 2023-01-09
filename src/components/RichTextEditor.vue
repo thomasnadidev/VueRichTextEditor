@@ -62,7 +62,7 @@
         </div>
       </div>
     </div>
-    <div id="editor" ref="content" class="p-2 output outline-none min-h-24" :class="editorValue === 'Rédiger votre texte' ? 'text-gray-400' : 'text-black'" @input="change" @click="checkSelection($event)" @focusin="onFocus" @focusout="onFocusOut" v-html="editorValue" contenteditable="true"></div>
+    <div id="editor" ref="content" class="p-2 output outline-none min-h-24" :class="editorValue === 'Rédiger votre texte' ? 'text-gray-400' : 'text-black'" @input="change" @click="checkSelection($event)" @focusin="onFocus" @focusout="onFocusOut"  @paste="onPaste" v-html="editorValue" contenteditable="true"></div>
   </div>
 </template>
 
@@ -180,6 +180,11 @@
       })
     },
     methods: {
+      onPaste(event) {
+        event.preventDefault()
+        const text = event.clipboardData.getData('text/plain')
+        document.execCommand('insertHTML', false, text)
+      },
       onFocus() {
         if(this.editorValue === 'Rédiger votre texte') {
           this.editorValue = '<div><br></div>'
