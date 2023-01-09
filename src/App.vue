@@ -1,8 +1,6 @@
 <template>
   <div id="app">
     <rich-text-editor v-model="value" @change="value = $event" />
-    {{ value }}
-    <rich-text-editor v-model="value2" @change="value2 = $event" />
   </div>
 </template>
 

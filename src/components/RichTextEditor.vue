@@ -1,6 +1,6 @@
 <template>
-  <div class="m-4 flex flex-col border-solid border-2 border-gray-200 rounded">
-    <div class="flex space-x-8 border-solid border-b-2 border-gray-200 divide divide-gray-500 p-2">
+  <div class="flex flex-col border-solid border-2 border-gray-200 rounded">
+    <div class="flex space-x-8 border-solid border-b-2 border-gray-200 divide divide-gray-500 p-2 overflow-x-auto">
       <div class="flex space-x-8" v-if="!isEditingLink">
         <div class="flex space-x-2">
           <button class="select-none p-4 w-8 h-8 flex justify-center items-center hover:bg-gray-100 rounded" @click="toggleBold">
