@@ -1,6 +1,6 @@
 {
   "name": "otto-rich-text-editor",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "main": "dist/otto-rich-text-editor.common.js",
   "module": "dist/otto-rich-text-editor.umd.min.js",
   "author": "Thomas Nadi",
