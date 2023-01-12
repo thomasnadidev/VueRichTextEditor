@@ -312,7 +312,8 @@
         this.isEditingLink = false;
 
         var link = document.createElement("a");
-        link.href = this.currentLinkUrl
+        link.target="_blank"
+        link.href = `//${this.currentLinkUrl}` 
         link.textContent = this.lastCarretPosition.selectedText;
 
         var fragment = document.createDocumentFragment();
@@ -321,6 +322,10 @@
         // Replace the selected text with the new link element
         this.lastCarretPosition.range.deleteContents();
         this.lastCarretPosition.range.insertNode(fragment);
+
+        console.log(this.currentLinkUrl);
+        console.log('---');
+        console.log(link);
 
         this.resetLinkEditing();
       },
