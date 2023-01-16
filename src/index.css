@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.popupContainer {
+  @apply z-[1000000]
+}
+
 #editor.output i {
   @apply italic
 }
