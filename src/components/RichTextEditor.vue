@@ -67,40 +67,9 @@
 </template>
 
 <script>
-  // import TurndownService from 'turndown'
-  // import { Remarkable } from 'remarkable';
-  // const markdown = new Remarkable('full');
-  // import { EmojiButton } from '@joeattardi/emoji-button';
-
   import { createPopup } from '@picmo/popup-picker';
-
-
-  // Marked.setBlockRule(/\[text-center\]([\s\S]*?)\[\/text-center\]/, (execArr) => {
-  //   return `<p style="text-align: center;">${Marked.parse(execArr[1])}</p>`;
-  // })
-  // Marked.setBlockRule(/\[text-right\]([\s\S]*?)\[\/text-right\]/, (execArr) => {
-  //   return `<p style="text-align: right;">${Marked.parse(execArr[1])}</p>`;
-  // })
-  // Marked.setBlockRule(/\**([\s\S]*?)\*\*/, (execArr) => {
-  //   return `<strong>${Marked.parse(execArr[1])}</strong>`;
-  // })
-  // Marked.setBlockRule(/_([\s\S]*?)_/, (execArr) => {
-  //   return `<em>${Marked.parse(execArr[1])}</em>`;
-  // })
-  // Marked.setBlockRule(/~([\s\S]*?)~/, (execArr) => {
-  //   return `<strike>${Marked.parse(execArr[1])}</strike>`;
-  // })
-
-  // Marked.setBlockRule(/\[br]/g, () => {
-  //   return `<br>`;
-  // })
-  
-  const componentName = 'RichTextEditor';
-
   export default {
-    name: componentName,
-    components: {
-    },
+    name: 'RichTextEditor',
     props: {
       value: {
         type: String,
@@ -109,7 +78,6 @@
     },
     data() {
       return {
-        // editorValue: Marked.parse(this.value) || '<p><br></p>',
         uid: undefined,
         editorValue: this.value,
         isSelectionBold: false,
@@ -150,6 +118,7 @@
       this.uid = Math.floor(Math.random() * 1000000);
 
       document.execCommand('defaultParagraphSeparator', false, 'div')
+      document.execCommand('styleWithCSS', false, true);
 
       if(!this.value) {
         this.editorValue = 'Rédiger votre texte'
@@ -168,6 +137,9 @@
         var node = document.createElement("span");
         node.innerHTML = `${event.emoji}`;
         this.lastCarretPosition.lastCursorPos.insertNode(node);
+
+        this.$emit('change', this.$refs.content.innerHTML)
+        this.checkSelection()
       });
 
       triggerButton.addEventListener('click', () => {
@@ -187,75 +159,21 @@
       },
       onFocus() {
         if(this.editorValue === 'Rédiger votre texte') {
-          this.editorValue = '<div><br></div>'
+          this.editorValue = '<div style="text-align: left;"><br></div>'
         }
         this.isEmojiCreationAllowed = true;
       },
       onFocusOut() {
-        if(this.value === '' || this.value === '<div><br></div>' || this.value === '<div></div>' || this.value === '<br>') {
+        if(this.value === '' || this.value === '<div style="text-align: left;"><br></div>' || this.value === '<div style="text-align: left;"></div>' || this.value === '<br>') {
           this.editorValue = 'Rédiger votre texte'
+          this.$emit('change', '')
         }
         this.isEmojiCreationAllowed = false;
       },
       change(e) {
-        // const turndown = new TurndownService({
-        //   emDelimiter: '_',
-        //   linkStyle: 'inlined',
-        // })
-
-        // turndown.addRule('striked', {
-        //   filter: ['del', 's', 'strike'],
-        //     replacement: (content) => {
-        //       return `~${content}~`
-        //     }
-        // })
-
-        // turndown.addRule('bold', {
-        //   filter: ['strong', 'b'],
-        //     replacement: (content) => {
-        //       return `**${content}**`
-        //     }
-        // })
-
-        // turndown.addRule('italic', {
-        //   filter: ['em', 'i'],
-        //     replacement: (content) => {
-        //       return `_${content}_`
-        //     }
-        // })
-
-        // turndown.addRule('indent', {
-        //   filter: [''],
-        //   replacement: () => {
-        //     return `[indent/]`
-        //   }
-        // })
-
-        // turndown.addRule('breaks', {
-        //   filter: 'br',
-
-        //   replacement: function (content, node, options) {
-        //     if (node.previousElementSibling && node.previousElementSibling.nodeName === 'BR') {
-        //         return options.br + '\\n'
-        //     }
-        //     return options.br + '\\n'
-        //   }
-        // })
-
-        // turndown.addRule('justify', {
-        //   filter: ['p'],
-        //   replacement: (content, node) => {
-        //     if(node.style.textAlign === 'center') {
-        //       return `[text-center]${content}[/text-center]`
-        //     }
-        //     else if(node.style.textAlign === 'right') {
-        //       return `[text-right]${content}[/text-right]`
-        //     }
-        //     else {
-        //       return content
-        //     }
-        //   }
-        // })
+        // if(e.key === 'Enter') {
+        //   document.execCommand('insertHTML', false, '<div style="text-align: left;"></div>');
+        // }
 
         this.$emit('change', e.target.innerHTML)
         this.checkSelection();
@@ -297,8 +215,6 @@
         this.isEditingLink = true;
         this.currentLinkTitle = this.lastCarretPosition.selectedText
         this.currentLinkUrl = this.lastCarretPosition.range.commonAncestorContainer.parentNode.href
-        // const selection = document.getSelection();
-        // document.execCommand("insertHTML",false,"<a href='"+href+"'>"+selected+"</a>");
       },
       resetLinkEditing() {
         this.currentLinkTitle = '';
@@ -313,26 +229,27 @@
 
         var link = document.createElement("a");
         link.target="_blank"
-        link.href = `//${this.currentLinkUrl}` 
+        link.href = `//${this.currentLinkUrl.replace(/^https?:\/\//, '')}` 
         link.textContent = this.lastCarretPosition.selectedText;
 
         var fragment = document.createDocumentFragment();
         fragment.appendChild(link);
 
-        // Replace the selected text with the new link element
         this.lastCarretPosition.range.deleteContents();
         this.lastCarretPosition.range.insertNode(fragment);
 
-        console.log(this.currentLinkUrl);
-        console.log('---');
-        console.log(link);
-
         this.resetLinkEditing();
+
+        this.$emit('change', this.$refs.content.innerHTML)
+        this.checkSelection()
       },
       checkSelection() {
-        if(this.editorValue === '<div>Redigez votre texte</div>') {
-          this.editorValue = '<div></div>'
+        if(this.value === null) {
+          if(this.editorValue === '<div>Redigez votre texte</div>') {
+            this.editorValue = '<div></div>'
+          }
         }
+        
         let selection = window.getSelection();
 
         if (selection && selection.rangeCount > 0) {
@@ -344,7 +261,6 @@
               selectedText
             }
           }
-          
         }
 
         if(selection) {
@@ -355,7 +271,6 @@
   
         if(this.lastCarretPosition.selectedText) {
           this.isLinkCreationAllowed = true;
-          // this.isSelectionLink = true
         } else {
           this.isLinkCreationAllowed = false;
         }

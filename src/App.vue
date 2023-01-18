@@ -2,19 +2,20 @@
   <div id="app">
     <rich-text-editor v-model="value" @change="value = $event" />
     ---
-    <rich-text-viewer :value="value" />
+    {{ value }}
+    <!-- <rich-text-viewer :value="value" /> -->
   </div>
 </template>
 
 <script>
 import RichTextEditor from './components/RichTextEditor.vue'
-import RichTextViewer from './components/RichTextViewer.vue'
+// import RichTextViewer from './components/RichTextViewer.vue'
 
 export default {
   name: 'App',
   components: {
     RichTextEditor,
-    RichTextViewer
+    // RichTextViewer
   },
   data() {
     return {
