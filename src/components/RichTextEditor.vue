@@ -195,7 +195,7 @@
 </template>
 
 <script>
-// import { createPopup } from "@picmo/popup-picker";
+import { createPopup } from "@picmo/popup-picker";
 export default {
   name: "RichTextEditor",
   props: {
@@ -260,28 +260,31 @@ export default {
     // if(!this.value) {
     //   this.editorValue = 'Rédiger votre texte'
     // }
-    // const triggerButton = this.$refs.emoji;
-    // const picker = createPopup({}, {
-    //   triggerElement: triggerButton,
-    //   referenceElement: triggerButton,
-    //   position: 'bottom-start',
-    //   i18n: 'fr'
-    // });
-    // picker.addEventListener('emoji:select', event => {
-    //   var node = document.createElement("span");
-    //   node.innerHTML = `${event.emoji}`;
-    //   this.lastCarretPosition.lastCursorPos.insertNode(node);
-    //   this.$emit('change', this.$refs.content.innerHTML)
-    //   this.checkSelection()
-    // });
-    // triggerButton.addEventListener('click', () => {
-    //   if(!this.isEditingLink) {
-    //     var cursorPos = window.getSelection();
-    //     var range = cursorPos.getRangeAt(0);
-    //     this.lastCarretPosition.lastCursorPos = range
-    //     picker.open()
-    //   }
-    // })
+    const triggerButton = this.$refs.emoji;
+    const picker = createPopup(
+      {},
+      {
+        triggerElement: triggerButton,
+        referenceElement: triggerButton,
+        position: "bottom-start",
+        i18n: "fr",
+      }
+    );
+    picker.addEventListener("emoji:select", (event) => {
+      var node = document.createElement("span");
+      node.innerHTML = `${event.emoji}`;
+      this.lastCarretPosition.lastCursorPos.insertNode(node);
+      this.$emit("change", this.$refs.content.innerHTML);
+      this.checkSelection();
+    });
+    triggerButton.addEventListener("click", () => {
+      if (!this.isEditingLink) {
+        var cursorPos = window.getSelection();
+        var range = cursorPos.getRangeAt(0);
+        this.lastCarretPosition.lastCursorPos = range;
+        picker.open();
+      }
+    });
   },
   methods: {
     onPaste(event) {
