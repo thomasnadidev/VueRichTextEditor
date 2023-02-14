@@ -2,8 +2,13 @@
   <div id="app">
     <rich-text-editor v-model="value" @change="value = $event" />
     ---
-    {{ value }}
-    <rich-text-viewer :value="value" :truncate="true" />
+    <div>
+      {{ value }}
+    </div>
+    ---
+    <div>
+      <rich-text-viewer :value="value" :truncate="false" />
+    </div>
   </div>
 </template>
 
